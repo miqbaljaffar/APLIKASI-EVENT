@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">UASR</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="login_fields_required">Username and password are required</string>
+    <string name="auth_success">Authentication success</string>
+    <string name="auth_failed">Authentication failed</string>
+    <string name="full_image">Full image view</string>
+    <string name="image_1_description">This is the description for image 1.</string>
+    <string name="image_2_description">This is the description for image 2.</string>
+    <string name="image_3_description">This is the description for image 3.</string>
+    <string name="image_4_description">This is the description for image 4.</string>
+    <string name="image_5_description">This is the description for image 5.</string>
+    <string name="image_6_description">This is the description for image 6.</string>
+
+
+    <string name="qr_code_image">QR Code Image</string>
+    <string name="add_poster">Add Poster</string>
+</resources>
