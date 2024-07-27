@@ -1,7 +1,6 @@
 package com.mobile.uasr;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -9,30 +8,29 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.github.chrisbanes.photoview.PhotoView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
-import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.UUID;
-
-import com.github.chrisbanes.photoview.PhotoView;
-
+import java.util.concurrent.atomic.AtomicLong;
 
 public class PosterViewActivity extends AppCompatActivity {
+
+    private static final AtomicLong COUNTER = new AtomicLong();
 
     private Bitmap generateQRCode(String text) {
         try {
@@ -46,12 +44,16 @@ public class PosterViewActivity extends AppCompatActivity {
         }
     }
 
+    private long generateUniqueNumericId() {
+        return COUNTER.incrementAndGet() + System.currentTimeMillis();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_poster_view);
 
-        PhotoView fullImageView = findViewById(R.id.fullImageView); // Gunakan PhotoView alih-alih ImageView
+        PhotoView fullImageView = findViewById(R.id.fullImageView);
         TextView fullImageDescription = findViewById(R.id.fullImageDescription);
         Button daftarButton = findViewById(R.id.daftarButton);
         Button backButton = findViewById(R.id.backButton);
@@ -62,12 +64,10 @@ public class PosterViewActivity extends AppCompatActivity {
             String imageDescription = intent.getStringExtra("imageDescription");
             String title = intent.getStringExtra("title");
 
-            // Memuat gambar menggunakan Glide
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 Glide.with(this).load(imageUrl).into(fullImageView);
             }
 
-            // Menetapkan teks deskripsi
             if (imageDescription != null) {
                 fullImageDescription.setText(imageDescription);
             }
@@ -82,7 +82,7 @@ public class PosterViewActivity extends AppCompatActivity {
 
                 builder.setPositiveButton("Ya", (dialogInterface, i) -> {
                     try {
-                        String registrationId = UUID.randomUUID().toString();
+                        long registrationId = generateUniqueNumericId();
                         String currentDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
                         String qrCodeData = "ID Pendaftaran: " + registrationId + "\n" +
@@ -97,16 +97,24 @@ public class PosterViewActivity extends AppCompatActivity {
                             byte[] qrCodeByteArray = baos.toByteArray();
                             String qrCodeBase64 = Base64.encodeToString(qrCodeByteArray, Base64.DEFAULT);
 
-                            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("qrcodes").child(registrationId);
-                            databaseReference.setValue(qrCodeBase64).addOnCompleteListener(task -> {
+                            // Save QR code data to Firebase Realtime Database
+                            EventEntry eventRegistration = new EventEntry();
+                            eventRegistration.setRegistrationId(String.valueOf(registrationId));
+                            eventRegistration.setTitle(title);
+                            eventRegistration.setUsername(username);
+                            eventRegistration.setCurrentDateTime(currentDateTime);
+                            eventRegistration.setQrCodeImage(qrCodeBase64); // Set QR code image as Base64 string
+
+                            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("qrcodes").child(String.valueOf(registrationId));
+                            databaseReference.setValue(eventRegistration).addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
-                                    Toast.makeText(PosterViewActivity.this, "QR code berhasil disimpan", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(PosterViewActivity.this, "Data pendaftaran berhasil disimpan", Toast.LENGTH_SHORT).show();
                                     Intent qrIntent = new Intent(PosterViewActivity.this, QRCodeDisplayActivity.class);
-                                    qrIntent.putExtra("registrationId", registrationId);
+                                    qrIntent.putExtra("registrationId", String.valueOf(registrationId));
                                     startActivity(qrIntent);
                                 } else {
-                                    Log.e("Firebase", "Gagal menyimpan QR code: " + task.getException().getMessage());
-                                    Toast.makeText(PosterViewActivity.this, "Gagal menyimpan QR code", Toast.LENGTH_SHORT).show();
+                                    Log.e("Firebase", "Gagal menyimpan data pendaftaran: " + task.getException().getMessage());
+                                    Toast.makeText(PosterViewActivity.this, "Gagal menyimpan data pendaftaran", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         } else {

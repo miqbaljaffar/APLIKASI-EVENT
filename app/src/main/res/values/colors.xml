@@ -12,5 +12,6 @@
     <color name="gray">#808080</color>
     <color name="purple">#800080</color>
     <color name="knowledge_blue">#007bff</color>
-
+    <color name="lightBackground">#F5F5F5</color>
+    <color name="primaryTextColor">#212121</color>
 </resources>

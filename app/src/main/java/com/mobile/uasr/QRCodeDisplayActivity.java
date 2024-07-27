@@ -6,17 +6,14 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -33,6 +30,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -56,25 +57,34 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String registrationId = intent.getStringExtra("registrationId");
 
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("qrcodes").child(registrationId);
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    String qrCodeBase64 = dataSnapshot.getValue(String.class);
-                    if (qrCodeBase64 != null) {
-                        byte[] decodedString = Base64.decode(qrCodeBase64, Base64.DEFAULT);
-                        decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                        qrCodeImageView.setImageBitmap(decodedByte);
+        if (registrationId != null) {
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("qrcodes").child(registrationId);
+            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        EventEntry event = dataSnapshot.getValue(EventEntry.class);
+                        if (event != null) {
+                            String qrCodeData = "ID Pendaftaran: " + event.getRegistrationId() + "\n" +
+                                    "Nama Acara: " + event.getTitle() + "\n" +
+                                    "Atas Nama: " + event.getUsername() + "\n" +
+                                    "Tanggal dan Waktu Pendaftaran: " + event.getCurrentDateTime();
+
+                            Bitmap qrCodeBitmap = generateQRCode(qrCodeData);
+                            if (qrCodeBitmap != null) {
+                                qrCodeImageView.setImageBitmap(qrCodeBitmap);
+                                decodedByte = qrCodeBitmap; // Initialize decodedByte
+                            }
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.e("QRCodeDisplay", "Failed to load QR code data: " + databaseError.getMessage());
-            }
-        });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.e("QRCodeDisplay", "Failed to load QR code data: " + databaseError.getMessage());
+                }
+            });
+        }
 
         saveButton.setOnClickListener(view -> {
             new AlertDialog.Builder(this)
@@ -99,18 +109,17 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
         backButton.setOnClickListener(view -> {
             Intent backIntent = new Intent(QRCodeDisplayActivity.this, BerandaPosterActivity.class);
             startActivity(backIntent);
-            finish(); // Optional: Call finish() if you don't want QRCodeDisplayActivity in the back stack
+            finish();
         });
 
-        // Request permission to write to external storage if not granted (for Android versions below 10)
+        createNotificationChannel();
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
             }
         }
-
-        createNotificationChannel();
     }
 
     private void saveQRCodeToLocalStorage() {
@@ -122,7 +131,7 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.DISPLAY_NAME, "QRCode_" + System.currentTimeMillis() + ".png");
         values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES); // Use Pictures directory
+        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
 
         Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
         if (uri != null) {
@@ -166,12 +175,22 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, save the QR code
                 saveQRCodeToLocalStorage();
             } else {
-                // Permission denied, show a message or handle it gracefully
                 Toast.makeText(this, "Izin untuk menulis ke penyimpanan eksternal ditolak", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    private Bitmap generateQRCode(String text) {
+        try {
+            MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+            BitMatrix bitMatrix = multiFormatWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
+            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+            return barcodeEncoder.createBitmap(bitMatrix);
+        } catch (Exception e) {
+            Log.e("QRCodeDisplayActivity", "Error generating QR code: ", e);
+            return null;
         }
     }
 }
