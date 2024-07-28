@@ -34,7 +34,7 @@ public class HistoryRegisActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bingung);
+        setContentView(R.layout.activity_history_regis);
 
         listView = findViewById(R.id.listView);
         searchEditText = findViewById(R.id.searchEditText);
