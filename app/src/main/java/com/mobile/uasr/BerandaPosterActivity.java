@@ -236,4 +236,24 @@ public class BerandaPosterActivity extends AppCompatActivity {
                 .setNegativeButton("Tidak", (dialog, which) -> dialog.dismiss())
                 .show();
     }
+
+    @Override
+    public void onBackPressed() {
+        // Show a dialog to confirm exit
+        new AlertDialog.Builder(this)
+                .setTitle("Konfirmasi Keluar")
+                .setMessage("Apakah Anda yakin ingin keluar?")
+                .setPositiveButton("Ya", (dialog, which) -> {
+                    // Call super.onBackPressed() to perform the default back action
+                    super.onBackPressed();
+                })
+                .setNegativeButton("Tidak", (dialog, which) -> {
+                    // Dismiss the dialog and do nothing
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+
+
 }

@@ -111,9 +111,11 @@ public class LoginActivity extends AppCompatActivity {
                         } else if (userType.equals("Konsumen")) {
                             Intent intent = new Intent(LoginActivity.this, BerandaPosterActivity.class);
                             intent.putExtra("username", userUsername);
-                            intent.putExtra("isKonsumen", true);
+                            intent.putExtra("isKonsumen", userType.equals("Konsumen"));
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
                             finish();
+
                         } else {
                             Toast.makeText(LoginActivity.this, "Tipe pengguna tidak valid", Toast.LENGTH_SHORT).show();
                         }

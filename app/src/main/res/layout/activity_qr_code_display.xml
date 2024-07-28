@@ -20,7 +20,8 @@
         android:text="Simpan"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/knowledge_blue"/>
 
     <Button
         android:id="@+id/backButton"
@@ -29,5 +30,6 @@
         android:text="Kembali"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_margin="16dp" />
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/knowledge_blue"/>
 </RelativeLayout>

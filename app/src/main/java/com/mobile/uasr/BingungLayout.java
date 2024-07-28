@@ -1,6 +1,7 @@
 package com.mobile.uasr;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,6 +29,7 @@ public class BingungLayout extends AppCompatActivity {
     private List<EventEntry> eventList;
     private List<EventEntry> filteredList;
     private EditText searchEditText;
+    private String currentUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,10 @@ public class BingungLayout extends AppCompatActivity {
         filteredList = new ArrayList<>();
         adapter = new BingungAdapter(this, filteredList);
         listView.setAdapter(adapter);
+
+        // Ambil username dari SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        currentUsername = sharedPreferences.getString("username", null);
 
         loadDataFromFirebase();
 
@@ -110,13 +116,10 @@ public class BingungLayout extends AppCompatActivity {
 
     private void filterEvents(String query) {
         filteredList.clear();
-        if (query.isEmpty()) {
-            filteredList.addAll(eventList);
-        } else {
-            for (EventEntry event : eventList) {
-                if (event.getTitle().toLowerCase().contains(query.toLowerCase())) {
-                    filteredList.add(event);
-                }
+        for (EventEntry event : eventList) {
+            if (event.getUsername().equals(currentUsername) &&
+                    (query.isEmpty() || event.getTitle().toLowerCase().contains(query.toLowerCase()))) {
+                filteredList.add(event);
             }
         }
         adapter.notifyDataSetChanged();

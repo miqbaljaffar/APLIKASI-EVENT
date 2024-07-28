@@ -48,15 +48,18 @@ public class BingungAdapter extends BaseAdapter {
             holder.qrCodeImageView = convertView.findViewById(R.id.qrCodeImageView);
             holder.eventTitle = convertView.findViewById(R.id.eventTitle);
             holder.registrationDateTime = convertView.findViewById(R.id.registrationDateTime);
+            holder.usernameTextView = convertView.findViewById(R.id.usernameTextView); // Add this line
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        EventEntry event = eventList.get(position);
+        EventEntry event = (EventEntry) getItem(position);
         holder.eventTitle.setText(event.getTitle());
         holder.registrationDateTime.setText(event.getCurrentDateTime());
+        holder.usernameTextView.setText(event.getUsername()); // Set the username
 
+        // Rest of the code for setting QR code image
         String qrCodeImage = event.getQrCodeImage();
         if (qrCodeImage != null && !qrCodeImage.isEmpty()) {
             try {
@@ -69,7 +72,7 @@ public class BingungAdapter extends BaseAdapter {
             }
         } else {
             Log.d("QRData", "No QR code image data available");
-            holder.qrCodeImageView.setImageBitmap(null); // Clear the image if no data
+            holder.qrCodeImageView.setImageBitmap(null);
         }
 
         return convertView;
@@ -79,5 +82,7 @@ public class BingungAdapter extends BaseAdapter {
         ImageView qrCodeImageView;
         TextView eventTitle;
         TextView registrationDateTime;
+        TextView usernameTextView; // Add this field
     }
+
 }
