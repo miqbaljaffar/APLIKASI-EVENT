@@ -14,11 +14,11 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public class BingungAdapter extends BaseAdapter {
+public class HistoryRegisAdapter extends BaseAdapter {
     private List<EventEntry> eventList;
     private LayoutInflater inflater;
 
-    public BingungAdapter(Context context, List<EventEntry> eventList) {
+    public HistoryRegisAdapter(Context context, List<EventEntry> eventList) {
         this.eventList = eventList;
         this.inflater = LayoutInflater.from(context);
     }

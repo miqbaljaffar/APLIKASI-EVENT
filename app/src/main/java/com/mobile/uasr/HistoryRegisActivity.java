@@ -23,9 +23,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BingungLayout extends AppCompatActivity {
+public class HistoryRegisActivity extends AppCompatActivity {
     private ListView listView;
-    private BingungAdapter adapter;
+    private HistoryRegisAdapter adapter;
     private List<EventEntry> eventList;
     private List<EventEntry> filteredList;
     private EditText searchEditText;
@@ -41,7 +41,7 @@ public class BingungLayout extends AppCompatActivity {
 
         eventList = new ArrayList<>();
         filteredList = new ArrayList<>();
-        adapter = new BingungAdapter(this, filteredList);
+        adapter = new HistoryRegisAdapter(this, filteredList);
         listView.setAdapter(adapter);
 
         // Ambil username dari SharedPreferences
@@ -67,7 +67,7 @@ public class BingungLayout extends AppCompatActivity {
                 showExitConfirmationDialog();
                 return true;
             } else if (item.getItemId() == R.id.bottom_home) {
-                Intent homeIntent = new Intent(BingungLayout.this, BerandaPosterActivity.class);
+                Intent homeIntent = new Intent(HistoryRegisActivity.this, BerandaPosterActivity.class);
                 startActivity(homeIntent);
                 return true;
             }

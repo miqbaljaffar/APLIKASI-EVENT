@@ -88,7 +88,7 @@ public class BerandaPosterActivity extends AppCompatActivity {
                 }
             } else if (item.getItemId() == R.id.bottom_profile) {
                 // Navigasi ke DaftarPosterActivity
-                Intent intent = new Intent(BerandaPosterActivity.this, BingungLayout.class);
+                Intent intent = new Intent(BerandaPosterActivity.this, HistoryRegisActivity.class);
                 startActivity(intent);
             } else if (item.getItemId() == R.id.bottom_exit) {
                 // Tampilkan dialog konfirmasi sebelum keluar
